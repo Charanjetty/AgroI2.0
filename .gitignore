@@ -1,9 +1,35 @@
 # Python virtual environment folder
 venv/
 .venv/
+env/
 
 # Python cache files
 __pycache__/
+*.py[cod]
+*$py.class
 
 # Compiled Python files
 *.pyc
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Environment variables
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
