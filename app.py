@@ -19,6 +19,34 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, Prediction, ContactMessage
 from sqlalchemy import desc
 
+# Initialize Flask App (MUST BE AT TOP)
+app = Flask(__name__)
+
+# Configuration
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+    database_url = 'sqlite:///agrointelligence.db'
+    print("⚠️  DATABASE_URL not set. Using local SQLite database.")
+else:
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+print(f"✅ Database Configured: {app.config['SQLALCHEMY_DATABASE_URI'].split('://')[0]}://...")
+
+# Initialize extensions
+db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
 BASE_DIR = Path(__file__).resolve().parent
 DATASET_PATH = BASE_DIR / "apcrop_dataset_realistic.csv"
 MODEL_PATH = BASE_DIR / "croprecommender_mlp.h5"
@@ -432,7 +460,9 @@ def login_facebook():
     flash("Facebook Login is not configured in this demo.", "info")
     return redirect(url_for("login"))
 
-# Initialize Services
+
+
+# Initialize Services (MUST BE AT BOTTOM, after classes are defined)
 DATASET = pd.read_csv(DATASET_PATH)
 district_service = DistrictDataService(DATASET)
 recommendation_engine = CropRecommendationEngine(DATASET)
@@ -441,7 +471,6 @@ chatbot_service = ChatbotService(CHATBOT_KNOWLEDGE)
 weather_service = WeatherService(DISTRICT_COORDINATES)
 
 if __name__ == "__main__":
-
     with app.app_context():
         db.create_all()
     app.run(debug=True, port=5000)
