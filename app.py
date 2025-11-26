@@ -136,12 +136,7 @@ class CropRecommendationEngine:
 
 # ... (rest of app setup) ...
 
-DATASET = pd.read_csv(DATASET_PATH)
-district_service = DistrictDataService(DATASET)
-recommendation_engine = CropRecommendationEngine(DATASET)
-scheme_service = SchemeService(GOVERNMENT_SCHEMES)
-chatbot_service = ChatbotService(CHATBOT_KNOWLEDGE)
-weather_service = WeatherService(DISTRICT_COORDINATES)
+
 
 @app.route("/")
 def home() -> str:
@@ -436,6 +431,14 @@ def login_google():
 def login_facebook():
     flash("Facebook Login is not configured in this demo.", "info")
     return redirect(url_for("login"))
+
+# Initialize Services
+DATASET = pd.read_csv(DATASET_PATH)
+district_service = DistrictDataService(DATASET)
+recommendation_engine = CropRecommendationEngine(DATASET)
+scheme_service = SchemeService(GOVERNMENT_SCHEMES)
+chatbot_service = ChatbotService(CHATBOT_KNOWLEDGE)
+weather_service = WeatherService(DISTRICT_COORDINATES)
 
 if __name__ == "__main__":
 
