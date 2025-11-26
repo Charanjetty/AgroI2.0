@@ -430,13 +430,22 @@ class CropRecommendationEngine:
 app = Flask(__name__)
 
 # Configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///agrointelligence.db')
+database_url = os.environ.get('DATABASE_URL')
+
+# Fallback to SQLite if DATABASE_URL is not set or empty
+if not database_url:
+    database_url = 'sqlite:///agrointelligence.db'
+    print("⚠️  DATABASE_URL not set. Using local SQLite database.")
+else:
+    # Fix for Render PostgreSQL URL (postgres:// -> postgresql://)
+    if database_url.startswith('postgres://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Fix for Render PostgreSQL URL (postgres:// -> postgresql://)
-if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://', 1)
+print(f"✅ Database Configured: {app.config['SQLALCHEMY_DATABASE_URI'].split('://')[0]}://...")
 
 # Initialize extensions
 db.init_app(app)
