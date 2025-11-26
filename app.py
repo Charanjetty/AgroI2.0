@@ -364,6 +364,105 @@ class ChatbotService:
             return (
                 "I do not have an exact answer. Please reach out to your local "
                 "Krishi Vigyan Kendra for expert advice."
+            )
+        return best_match
+
+class CropRecommendationEngine:
+    def __init__(self, dataset: pd.DataFrame) -> None:
+        # Lazy load model components
+        self.model = None
+        self.dataset = dataset.copy()
+        # Pre-load dataset metadata (lightweight)
+        if "Primary_Crop" not in self.dataset.columns:
+            # Fallback if dataset is not loaded correctly
+            self.placeholder_primary = "Paddy"
+        else:
+            self.placeholder_primary = safe_mode(self.dataset["Primary_Crop"]) or "Paddy"
+            
+        # We will initialize the rest in _ensure_loaded()
+
+    def _ensure_loaded(self):
+        """Loads the heavy model and TensorFlow only when needed."""
+        if self.model is not None:
+            return
+
+        print("⏳ Loading TensorFlow and Model...")
+        # Local import to save memory on startup
+        from tensorflow.keras.models import load_model
+        
+        self.model = load_model(MODEL_PATH)
+        meta = np.load(META_PATH, allow_pickle=True)
+        self.feature_cols = list(meta["feature_cols"])
+        self.classes = list(meta["classes"])
+
+        self.dataset = self.dataset.drop(columns=EXCLUDE_COLUMNS, errors="ignore")
+        self.input_columns = list(self.dataset.columns)
+
+        self.numeric_cols = self._identify_numeric_columns()
+        self.categorical_cols = self._identify_categorical_columns()
+
+        self.imputer = None
+        if self.numeric_cols:
+            self.imputer = KNNImputer(n_neighbors=5)
+            numeric_df = self.dataset[self.numeric_cols]
+            self.imputer.fit(numeric_df)
+
+        self.cat_dummy_columns = self._build_categorical_template()
+        print("✅ Model Loaded Successfully")
+
+    def _identify_numeric_columns(self) -> List[str]:
+        feature_df = self.dataset.drop(columns=["Primary_Crop"], errors='ignore')
+        numeric_cols = feature_df.select_dtypes(include=np.number).columns.tolist()
+        return [col for col in numeric_cols if not feature_df[col].isnull().all()]
+
+    def _identify_categorical_columns(self) -> List[str]:
+        feature_df = self.dataset.drop(columns=["Primary_Crop"], errors='ignore')
+        categorical_cols = feature_df.select_dtypes(exclude=np.number).columns.tolist()
+        return categorical_cols
+
+    def _build_categorical_template(self) -> List[str]:
+        if not self.categorical_cols:
+            return []
+        cat_df = (
+            self.dataset[self.categorical_cols]
+            .copy()
+            .fillna("Unknown")
+        )
+        encoded = pd.get_dummies(cat_df, columns=self.categorical_cols, drop_first=True)
+        return list(encoded.columns)
+
+    def _build_row(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        row: Dict[str, Any] = {}
+        for column in self.input_columns:
+            if column == "Primary_Crop":
+                row[column] = payload.get(column) or self.placeholder_primary
+            else:
+                row[column] = payload.get(column)
+        return row
+
+    def _transform_numeric(self, X: pd.DataFrame) -> pd.DataFrame:
+        if not self.numeric_cols or self.imputer is None:
+            return pd.DataFrame(index=X.index)
+        numeric_df = X[self.numeric_cols].apply(pd.to_numeric, errors="coerce")
+        transformed = self.imputer.transform(numeric_df)
+        return pd.DataFrame(transformed, columns=self.numeric_cols)
+
+    def _transform_categorical(self, X: pd.DataFrame) -> pd.DataFrame:
+        if not self.categorical_cols:
+            return pd.DataFrame(index=X.index)
+        cat_df = X[self.categorical_cols].copy().fillna("Unknown")
+        encoded = pd.get_dummies(cat_df, columns=self.categorical_cols, drop_first=True)
+        encoded = encoded.reindex(columns=self.cat_dummy_columns, fill_value=0)
+        return encoded
+
+    def predict(self, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+        self._ensure_loaded()  # <--- Load model here!
+        
+        row = self._build_row(payload)
+        sample_df = pd.DataFrame([row])
+        features = sample_df.drop(columns=["Primary_Crop"], errors="ignore")
+
+        numeric_part = self._transform_numeric(features)
         categorical_part = self._transform_categorical(features)
 
         combined = pd.concat([numeric_part, categorical_part], axis=1)
