@@ -1,6 +1,26 @@
 🌿 AgroIntelligence: A Smart Crop Recommendation System
 Welcome to the AgroIntelligence project! This repository contains a powerful, data-driven system for providing crop recommendations and farm guidance to farmers in Andhra Pradesh. By leveraging a comprehensive dataset and a machine learning model, this tool aims to optimize crop selection and improve agricultural outcomes.
 
+## ⚙️ Platform Features
+
+- **Dual experience:** Manual Mode lets farmers enter their soil test values, while Auto Mode pre-fills soil and climate baselines for any AP district/season combination.
+- **Production model:** The deployed Flask app loads the trained `croprecommender_mlp.h5` network plus its `croprecommender_mlp.npz` metadata to generate real rankings (top-3 crops with confidence).
+- **Contextual guidance:** Fertilizer plans, irrigation schedules, and market signals are fetched from the curated dataset for the predicted primary crop and district.
+- **Real-time weather:** Live conditions are fetched from Open-Meteo using district coordinates, and surfaced next to the recommendation results.
+- **Government schemes & AI chatbot:** Farmers discover the latest subsidies and can ask common agronomy questions in English or Telugu through a built-in assistant.
+- **Multilingual UI:** Key interface strings are available in English and Telugu, and the layout is mobile-friendly with TailwindCSS.
+
+## 🚀 Quick Start
+
+```bash
+python -m venv .venv
+.\\.venv\\Scripts\\activate
+pip install -r requirements.txt
+python app.py
+```
+
+Then visit [http://localhost:5000](http://localhost:5000) and explore Manual or Auto mode. The chatbot and scheme feeds work out of the box; weather cards need outbound internet access to contact Open-Meteo.
+
 🎥 Project Preview
 Get a quick look at the application in action! This video demonstrates the functionality of the model and the user interface.
 

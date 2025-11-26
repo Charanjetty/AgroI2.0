@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+{% block title %}Crop Prediction - AgroIntelligence{% endblock %}
+{% block head %}
+<style>
+    .dashboard-container {
+        background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(22, 163, 74, 0.95));
+        min-height: 100vh;
+        padding: 3rem 0;
+        position: relative;
+    }
+
+    .mode-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 3px solid transparent;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mode-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .mode-card>* {
+        position: relative;
+        z-index: 1;
+    }
+
+    .mode-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(22, 163, 74, 0.3);
+        border-color: #10b981;
+    }
+
+    .mode-card:hover::before {
+        opacity: 1;
+    }
+
+    .mode-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #10b981, #22c55e);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .feature-badge {
+        display: inline-block;
+        padding: 0.75rem 1.5rem;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-mode {
+        width: 100%;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #10b981, #22c55e);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        margin-top: 1.5rem;
+    }
+
+    .btn-mode:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .feature-list {
+        list-style: none;
+        padding: 0;
+        margin: 1.5rem 0;
+    }
+
+    .feature-list li {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        font-size: 1rem;
+        color: #475569;
+    }
+
+    .feature-list li i {
+        color: #10b981;
+        font-size: 1.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container -mx-4 -mt-10">
+    <div class="max-w-7xl mx-auto px-4 relative z-10">
+
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="inline-block mb-4">
+                <span class="feature-badge">
+                    <i class="fas fa-brain mr-2"></i>
+                    AI-Powered Crop Recommendations
+                </span>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-white mb-4 drop-shadow-lg">
+                Choose Your Prediction Mode
+            </h1>
+            <p class="text-xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+                Select the mode that best fits your needs and let our AI analyze your farm conditions
+            </p>
+        </div>
+
+        <!-- Mode Selection Cards -->
+        <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+
+            <!-- Manual Mode Card -->
+            <div class="mode-card">
+                <div class="mode-icon">
+                    <span>📝</span>
+                </div>
+                <h3 class="text-3xl font-bold text-slate-900 mb-3">Manual Mode</h3>
+                <p class="text-lg text-slate-600 mb-4 leading-relaxed">
+                    Have soil test data? Enter your precise NPK values, pH levels, and environmental parameters for
+                    highly accurate, personalized crop recommendations.
+                </p>
+
+                <ul class="feature-list">
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Enter exact soil NPK values</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Input pH and organic carbon levels</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Specify temperature and rainfall</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        <span>Get fine-tuned AI predictions</span>
+                    </li>
+                </ul>
+
+                <button onclick="showForm('manual')" class="btn-mode">
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    Start Manual Mode
+                </button>
+            </div>
+
+            <!-- Auto Mode Card -->
+            <div class="mode-card">
+                <div class="mode-icon" style="background: linear-gradient(135deg, #3b82f6, #60a5fa);">
+                    <span>🤖</span>
+                </div>
+                <h3 class="text-3xl font-bold text-slate-900 mb-3">Auto Mode</h3>
+                <p class="text-lg text-slate-600 mb-4 leading-relaxed">
+                    No soil test? No problem! Just select your district in Andhra Pradesh, and our system automatically
+                    uses regional data for instant recommendations.
+                </p>
+
+                <ul class="feature-list">
+                    <li>
+                        <i class="fas fa-check-circle" style="color: #3b82f6;"></i>
+                        <span>Select your district only</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle" style="color: #3b82f6;"></i>
+                        <span>Auto-filled soil parameters</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle" style="color: #3b82f6;"></i>
+                        <span>Real-time weather integration</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-check-circle" style="color: #3b82f6;"></i>
+                        <span>Quick and easy results</span>
+                    </li>
+                </ul>
+
+                <button onclick="showForm('auto')" class="btn-mode"
+                    style="background: linear-gradient(135deg, #3b82f6, #60a5fa); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);">
+                    <i class="fas fa-arrow-right mr-2"></i>
+                    Start Auto Mode
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Manual Mode Form -->
+        <div id="manual-form" class="hidden max-w-4xl mx-auto mt-12 bg-white rounded-3xl p-8 shadow-xl relative z-20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Manual Prediction Mode</h3>
+                <button onclick="hideForms()" class="text-slate-500 hover:text-slate-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="manualPredictionForm" onsubmit="handlePrediction(event, 'manual')" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Nitrogen (N)</label>
+                        <input type="number" name="soil_n" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 90">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Phosphorus (P)</label>
+                        <input type="number" name="soil_p" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 42">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Potassium (K)</label>
+                        <input type="number" name="soil_k" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 43">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">pH Level</label>
+                        <input type="number" step="0.1" name="soil_ph" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 6.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Temperature (°C)</label>
+                        <input type="number" step="0.1" name="temperature"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 28">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Humidity (%)</label>
+                        <input type="number" step="0.1" name="humidity"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 70">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Rainfall (mm)</label>
+                        <input type="number" step="0.1" name="rainfall"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            placeholder="e.g., 200">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">District (Optional)</label>
+                        <select name="district"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none district-select">
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition shadow-lg">
+                    Get Recommendations
+                </button>
+            </form>
+        </div>
+
+        <!-- Auto Mode Form -->
+        <div id="auto-form" class="hidden max-w-4xl mx-auto mt-12 bg-white rounded-3xl p-8 shadow-xl relative z-20">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-slate-900">Auto Prediction Mode</h3>
+                <button onclick="hideForms()" class="text-slate-500 hover:text-slate-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="autoPredictionForm" onsubmit="handlePrediction(event, 'auto')" class="space-y-6">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">District</label>
+                        <select name="district" required
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none district-select">
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">Season</label>
+                        <select name="season"
+                            class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="">Auto Detect</option>
+                            <option value="Kharif">Kharif</option>
+                            <option value="Rabi">Rabi</option>
+                            <option value="Zaid">Zaid</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit"
+                    class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg">
+                    Auto-Fetch Data & Predict
+                </button>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" class="hidden max-w-4xl mx-auto mt-12 relative z-20">
+            <div class="bg-white rounded-3xl p-8 shadow-xl border-2 border-green-100">
+                <div class="text-center mb-8">
+                    <div class="inline-block p-3 bg-green-100 rounded-full text-green-600 mb-4">
+                        <i class="fas fa-check-circle text-3xl"></i>
+                    </div>
+                    <h3 class="text-3xl font-bold text-slate-900">Top Recommendations</h3>
+                    <p class="text-slate-600">Based on your inputs and environmental analysis</p>
+                </div>
+
+                <div id="recommendations-container" class="grid md:grid-cols-3 gap-6 mb-8">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="bg-slate-50 rounded-2xl p-6">
+                    <h4 class="font-bold text-slate-900 mb-4">Environmental Snapshot</h4>
+                    <div id="env-snapshot" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-12 text-center">
+            <div class="inline-block bg-white/20 backdrop-blur-md rounded-2xl px-6 py-4 border-2 border-white/30">
+                <p class="text-white text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Both modes use the same advanced AI model trained on Andhra Pradesh agricultural data
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Fetch districts on load
+    fetch('/get_district_names')
+        .then(response => response.json())
+        .then(districts => {
+            const selects = document.querySelectorAll('.district-select');
+            selects.forEach(select => {
+                districts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    select.appendChild(option);
+                });
+            });
+        });
+
+    function showForm(type) {
+        document.getElementById('manual-form').classList.add('hidden');
+        document.getElementById('auto-form').classList.add('hidden');
+        document.getElementById('results-section').classList.add('hidden');
+
+        if (type === 'manual') {
+            document.getElementById('manual-form').classList.remove('hidden');
+        } else {
+            document.getElementById('auto-form').classList.remove('hidden');
+        }
+
+        // Scroll to form
+        document.getElementById(type + '-form').scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    function hideForms() {
+        document.getElementById('manual-form').classList.add('hidden');
+        document.getElementById('auto-form').classList.add('hidden');
+    }
+
+    async function handlePrediction(event, mode) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        payload.mode = mode;
+
+        // Show loading state
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.textContent;
+        btn.textContent = 'Analyzing...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            displayResults(data);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while fetching recommendations.');
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function displayResults(data) {
+        const container = document.getElementById('recommendations-container');
+        container.innerHTML = '';
+
+        // Crop emoji mapping
+        const cropEmojis = {
+            'Paddy': '🌾', 'Rice': '🌾', 'Wheat': '🌾',
+            'Maize': '🌽', 'Corn': '🌽',
+            'Cotton': '🌸',
+            'Sugarcane': '🎋',
+            'Groundnut': '🥜', 'Peanut': '🥜',
+            'Sunflower': '🌻',
+            'Soybean': '🫘', 'Chickpea': '🫘', 'Pigeon Pea': '🫘',
+            'Tomato': '🍅', 'Potato': '🥔', 'Onion': '🧅',
+            'Chilli': '🌶️', 'Pepper': '🌶️',
+            'Turmeric': '🟡',
+            'Mango': '🥭', 'Banana': '🍌', 'Coconut': '🥥',
+            'Cashew': '🌰', 'Coffee': '☕', 'Tea': '🍵',
+            'Tobacco': '🌿',
+            'Jowar': '🌾', 'Bajra': '🌾', 'Ragi': '🌾',
+            'default': '🌱'
+        };
+
+        data.recommendations.forEach((rec, index) => {
+            const isFirst = index === 0;
+            const card = document.createElement('div');
+            card.className = `p-6 rounded-2xl text-center ${isFirst ? 'bg-green-600 text-white shadow-lg transform scale-105' : 'bg-white border border-slate-200 text-slate-800'}`;
+
+            const cropEmoji = cropEmojis[rec.crop] || cropEmojis['default'];
+
+            card.innerHTML = `
+                <div class="text-6xl mb-3">${cropEmoji}</div>
+                <div class="text-sm font-semibold uppercase tracking-wider mb-2 opacity-80">
+                    ${isFirst ? '🏆 Best Match' : '⭐ Alternative'}
+                </div>
+                <div class="text-3xl font-bold mb-2">
+                    ${rec.crop}
+                </div>
+                <div class="text-sm opacity-90">
+                    Confidence: ${(rec.score * 100).toFixed(1)}%
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        // Update Snapshot
+        const snapshot = document.getElementById('env-snapshot');
+        const loc = data.location_details || {};
+        const weather = data.weather?.current || {};
+
+        snapshot.innerHTML = `
+            <div class="p-3 bg-white rounded-xl border border-slate-100">
+                <div class="text-xs text-slate-500">District</div>
+                <div class="font-semibold">${loc.district || '-'}</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-100">
+                <div class="text-xs text-slate-500">Soil Type</div>
+                <div class="font-semibold">${loc.soil_type || '-'}</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-100">
+                <div class="text-xs text-slate-500">Rainfall</div>
+                <div class="font-semibold">${loc.rainfall ? loc.rainfall + ' mm' : '-'}</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-100">
+                <div class="text-xs text-slate-500">Temperature</div>
+                <div class="font-semibold">${weather.temperature ? weather.temperature + '°C' : '-'}</div>
+            </div>
+        `;
+
+        document.getElementById('results-section').classList.remove('hidden');
+        document.getElementById('results-section').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+</div>
+</div>
+
+<div class="max-w-6xl mx-auto px-4">
+    {% if predictions %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for pred in predictions %}
+        <div class="prediction-card">
+            <div class="card-header">
+                <span class="text-sm font-medium text-slate-500">
+                    <i class="far fa-calendar-alt mr-1"></i>
+                    {{ pred.created_at.strftime('%d %b %Y') }}
+                </span>
+                <span class="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded bg-slate-200 text-slate-600">
+                    {{ pred.mode }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="text-xs text-slate-500 uppercase font-bold mb-1">Top Recommendation</div>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold text-slate-900">{{ pred.top_crop }}</h3>
+                        <span class="crop-badge badge-primary">
+                            {{ (pred.top_crop_score * 100)|round|int }}% Match
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    {% if pred.second_crop %}
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600">2. {{ pred.second_crop }}</span>
+                        <span class="text-slate-400">{{ (pred.second_crop_score * 100)|round|int }}%</span>
+                    </div>
+                    {% endif %}
+                    {% if pred.third_crop %}
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-600">3. {{ pred.third_crop }}</span>
+                        <span class="text-slate-400">{{ (pred.third_crop_score * 100)|round|int }}%</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="border-t border-slate-100 pt-4 mt-4">
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">District</div>
+                            <div class="stat-value">{{ pred.district }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Season</div>
+                            <div class="stat-value">{{ pred.season or 'N/A' }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Soil Type</div>
+                            <div class="stat-value">{{ pred.soil_type or 'N/A' }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Water</div>
+                            <div class="stat-value">{{ pred.water_source or 'N/A' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
+        <div class="text-6xl mb-4">🌱</div>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">No Predictions Yet</h3>
+        <p class="text-slate-500 mb-6">Start by getting your first crop recommendation</p>
+        <a href="/dashboard"
+            class="px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition">
+            Go to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
